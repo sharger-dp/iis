@@ -35,7 +35,7 @@ class PortfolioPrinter:
             f"{'Сумма':>12}"
         ]
         print("".join(header))
-        print("-" * 159)
+        print("-" * 169)
 
     def _print_body(self):
         for ticker, _ in self.portfolio.sorted_tickers:
@@ -89,7 +89,7 @@ class PortfolioPrinter:
         self.total['weights'] += cap_percent
 
     def _print_footer(self):
-        print("-" * 159)
+        print("-" * 169)
         total_row = [
             f"{'ИТОГО':<8} | {'':<20} |",
             f"{'':>12} |",
