@@ -1,0 +1,50 @@
+{
+  "BANEP": {
+    "qty": 1,
+    "invested": 1371.5
+  },
+    "SIBN": {
+    "qty": 12,
+    "invested": 7519.20
+  },
+    "SMLT": {
+    "qty": 1,
+    "invested": 1325.5
+  },
+    "MGNT": {
+    "qty": 2,
+    "invested": 11020.00
+  },
+    "MDMG": {
+    "qty": 1,
+    "invested": 1030.60
+  },
+    "NVTK": {
+    "qty": 1,
+    "invested": 931.20
+  },
+  "SBER": {
+    "qty": 10,
+    "invested": 3160.0
+  },
+        "SVAV": {
+    "qty": 8,
+    "invested": 6617.60
+  },
+    "TATN": {
+    "qty": 34,
+    "invested": 22351.60
+  },
+      "TRNFP": {
+    "qty": 2,
+    "invested": 2488.0
+  },
+      "HEAD": {
+    "qty": 1,
+    "invested": 4058.0
+  },
+  "ROSN": {
+    "qty": 5,
+    "invested": 2286.35
+  }
+}
