@@ -29,13 +29,14 @@ class PortfolioPrinter:
             f"{'Результат':>12} |",
             f"{'Рез.%':>8} |",
             f"{'Доля,%':>8} |",
+            f"{'Капитализация':>20} │",
             f"{'Кап.доля,%':>10} |",
             f"{'Действие':>10} |",
             f"{'Докупка':>12} |",
             f"{'Сумма':>12}"
         ]
         print("".join(header))
-        print("-" * 169)
+        print("-" * 190)
 
     def _print_body(self):
         for ticker, _ in self.portfolio.sorted_tickers:
@@ -53,6 +54,7 @@ class PortfolioPrinter:
         result_percent = (result_value / invested * 100) if invested != 0 else 0.0
         portfolio_percent = (
                     current_value / self.portfolio.portfolio_total * 100) if self.portfolio.portfolio_total > 0 else 0
+        capitalization = data.get('ISSUECAPITALIZATION', 0)  # Получаем капитализацию
         cap_percent = (data['ISSUECAPITALIZATION'] / self.portfolio.total_cap * 100) if data[
                                                                                             'ISSUECAPITALIZATION'] and self.portfolio.total_cap > 0 else 0
 
@@ -74,6 +76,7 @@ class PortfolioPrinter:
             f"{self.formatter.format_result(result_value)} |"
             f"{self.formatter.format_percent(result_percent):>8} |",
             f"{portfolio_percent:>7.2f}% |",
+            f"{self.formatter.format_value(capitalization, 'currency'):>20} │",
             f"{cap_percent:>9.2f}% |" if cap_percent else f"{'N/A':>10} |",
             f"{self.formatter.format_action(action)} |",
             f"{round(buy_qty):>12} |",
@@ -89,18 +92,19 @@ class PortfolioPrinter:
         self.total['weights'] += cap_percent
 
     def _print_footer(self):
-        print("-" * 169)
+        print("-" * 190)
         total_row = [
-            f"{'ИТОГО':<8} | {'':<20} |",
-            f"{'':>12} |",
+            f"{'ИТОГО':<9}  {'':<21} ",
+            f"{'':>13} ",
             f"{'':>8} |",
             f"{self.formatter.format_value(self.total['current_value'], 'currency'):>12} |",
             f"{self.formatter.format_value(self.total['invested'], 'currency'):>12} |",
             f"{self.formatter.format_value(self.total['result'], 'currency'):>12} |",
-            f"{self.formatter.format_percent((self.total['result'] / self.total['invested'] * 100) if self.total['invested'] != 0 else 0):>8} |",
-            f"{100.00:>7.2f}% |",
-            f"{self.total['weights']:>9.2f}% |",
-            f"{'':>10} |",
+            f"{'':>9} ",
+            f"{'':>9} ",
+            f"{'':>20} ",
+            f"{'':>11} ",
+            f"{'':>11} ",
             f"{'':>12} |",
             f"{self.formatter.format_value(self.total['buy_amount_total'], 'currency'):>12}"
         ]
