@@ -3,48 +3,136 @@
     "qty": 1,
     "invested": 1371.5
   },
-    "SIBN": {
-    "qty": 12,
-    "invested": 7519.20
+  "GMKN": {
+    "qty": 0,
+    "invested": 0
   },
-    "SMLT": {
+  "CHMF": {
+    "qty": 0,
+    "invested": 0
+  },
+  "SIBN": {
+    "qty": 17,
+    "invested": 10134.21
+  },
+  "SMLT": {
     "qty": 1,
     "invested": 1325.5
   },
-    "MGNT": {
+  "MGNT": {
     "qty": 2,
     "invested": 11020.00
   },
-    "MDMG": {
+  "MDMG": {
     "qty": 1,
     "invested": 1030.60
   },
-    "NVTK": {
-    "qty": 1,
-    "invested": 931.20
+  "NVTK": {
+    "qty": 10,
+    "invested": 10388
   },
   "SBER": {
-    "qty": 10,
-    "invested": 3160.0
+    "qty": 83,
+    "invested": 25228.68
   },
-        "SVAV": {
+  "SVAV": {
     "qty": 8,
     "invested": 6617.60
   },
-    "TATN": {
+  "TATN": {
     "qty": 34,
     "invested": 22351.60
   },
-      "TRNFP": {
+  "TRNFP": {
     "qty": 2,
     "invested": 2488.0
   },
-      "HEAD": {
+  "HEAD": {
     "qty": 1,
     "invested": 4058.0
   },
+  "PHOR": {
+    "qty": 0,
+    "invested": 0
+  },
+  "ALRS": {
+    "qty": 0,
+    "invested": 0
+  },
   "ROSN": {
-    "qty": 5,
-    "invested": 2286.35
+    "qty": 40,
+    "invested": 18405.6
+  },
+  "LKOH": {
+    "qty": 3,
+    "invested": 19741.5
+  },
+  "MTSS": {
+    "qty": 0,
+    "invested": 0
+  },
+  "NLMK": {
+    "qty": 0,
+    "invested": 0
+  },
+  "SNGS": {
+    "qty": 0,
+    "invested": 0
+  },
+  "BSPB": {
+    "qty": 0,
+    "invested": 0
+  },
+  "RTKM": {
+    "qty": 0,
+    "invested": 0
+  },
+  "MSNG": {
+    "qty": 0,
+    "invested": 0
+  },
+  "NMTP": {
+    "qty": 0,
+    "invested": 0
+  },
+  "LSNG": {
+    "qty": 0,
+    "invested": 0
+  },
+  "AQUA": {
+    "qty": 0,
+    "invested": 0
+  },
+  "MRKP": {
+    "qty": 0,
+    "invested": 0
+  },
+  "MSRS": {
+    "qty": 0,
+    "invested": 0
+  },
+  "MRKC": {
+    "qty": 0,
+    "invested": 0
+  },
+  "SBERP": {
+    "qty": 0,
+    "invested": 0
+  },
+  "TATNP": {
+    "qty": 0,
+    "invested": 0
+  },
+  "SNGSP": {
+    "qty": 0,
+    "invested": 0
+  },
+  "RTKMP": {
+    "qty": 0,
+    "invested": 0
+  },
+  "LSNGP": {
+    "qty": 0,
+    "invested": 0
   }
 }

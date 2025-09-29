@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 
 class UserInputHandler:
     def __init__(self, json_file_path='portfolio_data.json'):
