@@ -13,6 +13,6 @@ if __name__ == "__main__":
     'LSNG', 'LSNGP', 'MDMG', 'MGNT', 'MRKC', 'MRKP', 'MSNG', 'MSRS',
     'MTSS', 'NMTP', 'NLMK', 'NVTK', 'PHOR', 'ROSN', 'RTKM', 'RTKMP',
     'SBER', 'SBERP', 'SIBN', 'SMLT', 'SNGS', 'SNGSP', 'SVAV', 'TATN',
-    'TATNP', 'TRNFP', 'BELU', 'PMSB', 'MOEX']
+    'TATNP', 'TRNFP', 'BELU', 'PMSB', 'MOEX', 'PLZL', 'X5']
     app = RebalanceApp(tickers_irdiv, json_file_path)
     app.run()

@@ -2,9 +2,10 @@ from pages.rebalance_calc_page import RebalanceCalculator
 
 
 class PortfolioPrinter:
-    def __init__(self, portfolio, formatter):
+    def __init__(self, portfolio, formatter, free_cash=0):
         self.portfolio = portfolio
         self.formatter = formatter
+        self.free_cash = free_cash
         self.total = {
             'current_value': 0.0,
             'invested': 0.0,
@@ -58,12 +59,17 @@ class PortfolioPrinter:
         cap_percent = (data['ISSUECAPITALIZATION'] / self.portfolio.total_cap * 100) if data[
                                                                                             'ISSUECAPITALIZATION'] and self.portfolio.total_cap > 0 else 0
 
-        action, buy_qty, buy_amount = RebalanceCalculator.calculate_rebalance({
-            'portfolio_percent': portfolio_percent,
-            'cap_percent': cap_percent,
-            'last_price': last_price,
-            'qty': qty
-        }, self.portfolio.portfolio_total, self.portfolio.total_cap)
+        action, buy_qty, buy_amount = RebalanceCalculator.calculate_rebalance(
+            {
+                'portfolio_percent': portfolio_percent,
+                'cap_percent': cap_percent,
+                'last_price': last_price,
+                'qty': qty
+            },
+            self.portfolio.portfolio_total,
+            self.portfolio.total_cap,
+            self.free_cash  # 🔹 новый параметр
+        )
 
         self._update_totals(current_value, invested, result_value, buy_amount, cap_percent)
 

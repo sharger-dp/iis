@@ -21,6 +21,12 @@ class RebalanceApp:
         user_inputs = self.user_input_handler.get_inputs(self.tickers)
         self.portfolio = Portfolio(self.tickers, moex_data, user_inputs)
 
-        printer = PortfolioPrinter(self.portfolio, self.formatter)
+        # 🔹 Новый ввод
+        try:
+            free_cash = float(input("Введите сумму новых инвестиций (₽): ").strip() or 0)
+        except ValueError:
+            free_cash = 0
+
+        printer = PortfolioPrinter(self.portfolio, self.formatter, free_cash)
         print("\nСтратегия ребалансировки портфеля:")
         printer.print()
