@@ -1,5 +1,8 @@
 import requests
 import xml.etree.ElementTree as ET
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MoexClient:
     def __init__(self):
@@ -13,17 +16,22 @@ class MoexClient:
             return None
 
     def fetch_data(self, tickers):
+        if not tickers:
+            return {}
         try:
             response = requests.get(self.base_url)
             response.raise_for_status()
+
+            if not response.content:
+                logger.warning("Получен пустой ответ от сервера")
+                return {}
             root = ET.fromstring(response.content)
             return self._parse_xml(root, tickers)
-
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка подключения: {e}")
+            logger.error(f"Ошибка подключения: {e}")
             return None
         except ET.ParseError:
-            print("Ошибка обработки XML-данных")
+            logger.error("Ошибка обработки XML-данных")
             return None
 
     def _parse_xml(self, root, tickers):
