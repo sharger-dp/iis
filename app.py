@@ -364,3 +364,30 @@ st.dataframe(df.style.format({"Цена": "{:,.2f}", "Стоимость": "{:,.
 
 st.subheader(f"💵 Общая стоимость портфеля: {portfolio._calculate_portfolio_total():,.2f} ₽")
 st.subheader(f"💰 Общая сумма с депозитом: {total_value:,.2f} ₽")
+
+# Получаем текущую цену индекса
+moex_client = MoexClient()
+market_index_current = moex_client.get_rts_index_price()
+# Историческая цена индекса (например, за 30 дней назад)
+# Для простоты используем фиктивные данные (в реальности нужно загружать историю)
+market_index_historical = 3371.06  # Пример: цена индекса 30 дней назад
+# Рассчитаем доходность индекса
+if market_index_current and market_index_historical > 0:
+    market_index_return = ((market_index_current - market_index_historical) / market_index_historical) * 100
+else:
+    market_index_return = 0.0
+# Рассчитаем доходность портфеля
+portfolio_return = ((current_value - total_invested) / total_invested) * 100
+# Отобразим сравнение с цветовым форматированием
+st.markdown("<h5>📈 Доходность портфеля vs рыночного индекса</h5>", unsafe_allow_html=True)
+# Цвет для портфеля
+color_portfolio = "green" if portfolio_return >= 0 else "red"
+# Цвет для индекса
+color_index = "green" if market_index_return >= 0 else "red"
+st.markdown(
+    f"<div style='display:flex; justify-content: space-between;'>"
+    f"<span style='color:{color_portfolio}'>портфель: {portfolio_return:.2f}%</span>"
+    f"<span style='color:{color_index}'>индекс: {market_index_return:.2f}%</span>"
+    f"</div>",
+    unsafe_allow_html=True
+)

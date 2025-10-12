@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 class MoexClient:
     def __init__(self):
         self.base_url = "https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.xml"
+        self.index_url = "https://iss.moex.com/iss/engines/stock/markets/index/securities.xml"
 
     @staticmethod
     def _safe_float(value):
@@ -32,6 +33,33 @@ class MoexClient:
             return None
         except ET.ParseError:
             logger.error("Ошибка обработки XML-данных")
+            return None
+
+    def get_rts_index_price(self):
+        try:
+            response = requests.get(self.index_url)
+            response.raise_for_status()
+            root = ET.fromstring(response.content)
+            # Находим блок <data id="marketdata">
+            marketdata = root.find(".//data[@id='marketdata']")
+            if marketdata is None:
+                print("⚠️ Не найден блок marketdata")
+                return None
+            # Ищем все <row> внутри него
+            for row in marketdata.findall(".//row"):
+                secid = row.get("SECID")
+                if secid == "IMOEX":
+                    last_value = row.get("LAST") or row.get("LASTVALUE")
+                    if last_value:
+                        return float(last_value)
+                    else:
+                        print(f"⚠️ У {secid} отсутствует поле LAST или LASTVALUE")
+                        return None
+
+            print("⚠️ IMOEX не найден в marketdata")
+            return None
+        except Exception as e:
+            print(f"❌ Ошибка получения данных индекса: {e}")
             return None
 
     def _parse_xml(self, root, tickers):
