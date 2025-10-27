@@ -187,10 +187,10 @@ def get_portfolio_table(portfolio, deposit, history=None):
             avg_daily_return = (change_pct / days_diff) if days_diff > 0 else 0
             avg_daily_total_return = (change_total_pct / days_diff) if days_diff > 0 else 0
 
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("#### 📊 Доходность портфеля (без депозита)")
+                st.markdown("#### 📊 Рост портфеля (без депозита)")
                 color = "green" if change_rub > 0 else ("red" if change_rub < 0 else "gray")
                 st.markdown(
                     f"<span style='font-size:22px; color:{color}'>{change_rub:,.2f} ₽ ({change_pct:+.2f}%)</span>",
@@ -198,15 +198,7 @@ def get_portfolio_table(portfolio, deposit, history=None):
                 )
 
             with col2:
-                st.markdown("#### 💰 Доходность с депозитом")
-                color = "green" if change_total_rub > 0 else ("red" if change_total_rub < 0 else "gray")
-                st.markdown(
-                    f"<span style='font-size:22px; color:{color}'>{change_total_rub:,.2f} ₽ ({change_total_pct:+.2f}%)</span>",
-                    unsafe_allow_html=True
-                )
-
-            with col3:
-                st.markdown("#### 📈 Средняя доходность в день")
+                st.markdown("#### 📈 Средний рост в день")
                 avg_color = "green" if avg_daily_total_return > 0 else ("red" if avg_daily_total_return < 0 else "gray")
                 st.markdown(
                     f"<span style='font-size:22px; color:{avg_color}'>{avg_daily_total_return:+.2f}%/день</span>",

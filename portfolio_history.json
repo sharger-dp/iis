@@ -8,5 +8,45 @@
     "date": "2025-10-12",
     "portfolio_value": 113400.3,
     "total_with_deposit": 113400.3
+  },
+  {
+    "date": "2025-10-13",
+    "portfolio_value": 121712.7,
+    "total_with_deposit": 121712.7
+  },
+  {
+    "date": "2025-10-15",
+    "portfolio_value": 119991.8,
+    "total_with_deposit": 119991.8
+  },
+  {
+    "date": "2025-10-18",
+    "portfolio_value": 128844.8,
+    "total_with_deposit": 128844.8
+  },
+  {
+    "date": "2025-10-19",
+    "portfolio_value": 127345.60000000002,
+    "total_with_deposit": 127345.60000000002
+  },
+  {
+    "date": "2025-10-23",
+    "portfolio_value": 120394.75,
+    "total_with_deposit": 120394.75
+  },
+  {
+    "date": "2025-10-25",
+    "portfolio_value": 119318.64999999998,
+    "total_with_deposit": 119318.64999999998
+  },
+  {
+    "date": "2025-10-26",
+    "portfolio_value": 119318.64999999998,
+    "total_with_deposit": 119318.64999999998
+  },
+  {
+    "date": "2025-10-27",
+    "portfolio_value": 117938.0,
+    "total_with_deposit": 117938.0
   }
 ]
