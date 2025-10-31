@@ -252,14 +252,13 @@ def get_portfolio_table(portfolio, deposit, history=None):
             portfolio.total_cap,
             deposit
         )
-
         rows.append([
             ticker,
             qty,
             last_price,
             current_value,
-            f"{portfolio_percent:.2f}%",
-            f"{cap_percent:.2f}%" if cap_percent else "N/A",
+            portfolio_percent,  # ← Теперь число!
+            cap_percent if cap_percent else 0,  # ← Теперь число!
             action,
             buy_qty,
             buy_amount
@@ -352,7 +351,18 @@ if st.session_state.update_flag:
 
 # ===== Вывод таблицы портфеля =====
 df, total_value = get_portfolio_table(portfolio, deposit)
-st.dataframe(df.style.format({"Цена": "{:,.2f}", "Стоимость": "{:,.2f}", "Сумма покупки": "{:,.2f}"}))
+st.data_editor(
+    df,
+    column_config={
+        "Доля, %": st.column_config.NumberColumn(format="%.2f %%"),
+        "Кап.доля, %": st.column_config.NumberColumn(format="%.2f %%"),
+        "Цена": st.column_config.NumberColumn(format="%.2f ₽"),
+        "Стоимость": st.column_config.NumberColumn(format="%.2f ₽"),
+        "Сумма покупки": st.column_config.NumberColumn(format="%.2f ₽")
+    },
+    hide_index=True,
+    disabled=True
+)
 
 st.subheader(f"💵 Общая стоимость портфеля: {portfolio._calculate_portfolio_total():,.2f} ₽")
 st.subheader(f"💰 Общая сумма с депозитом: {total_value:,.2f} ₽")
