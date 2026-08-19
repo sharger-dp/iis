@@ -372,10 +372,10 @@ moex_client = MoexClient()
 market_index_current = moex_client.get_rts_index_price()
 # Историческая цена индекса (например, за 30 дней назад)
 # Для простоты используем фиктивные данные (в реальности нужно загружать историю)
-market_index_historical = 3371.06  # Пример: цена индекса 30 дней назад
+market_index_historical = 2171,47  # Пример: цена индекса 30 дней назад
 # Рассчитаем доходность индекса
-if market_index_current and market_index_historical > 0:
-    market_index_return = ((market_index_current - market_index_historical) / market_index_historical) * 100
+if market_index_current and market_index_historical[0] > 0:
+    market_index_return = ((market_index_current - market_index_historical[0]) / market_index_historical[0]) * 100
 else:
     market_index_return = 0.0
 # Рассчитаем доходность портфеля

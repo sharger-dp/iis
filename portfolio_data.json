@@ -4,16 +4,16 @@
     "invested": 1371.5
   },
   "GMKN": {
-    "qty": 30,
-    "invested": 3705.9
+    "qty": 60,
+    "invested": 7942.7
   },
   "CHMF": {
     "qty": 0,
     "invested": 0
   },
   "SIBN": {
-    "qty": 18,
-    "invested": 10631.52
+    "qty": 23,
+    "invested": 12965.02
   },
   "SMLT": {
     "qty": 1,
@@ -28,12 +28,12 @@
     "invested": 1030.6
   },
   "NVTK": {
-    "qty": 12,
-    "invested": 12589.2
+    "qty": 14,
+    "invested": 14749.6
   },
   "SBER": {
-    "qty": 89,
-    "invested": 26961.74
+    "qty": 150,
+    "invested": 41383.5
   },
   "SVAV": {
     "qty": 8,
@@ -60,8 +60,8 @@
     "invested": 0
   },
   "ROSN": {
-    "qty": 46,
-    "invested": 20690.15
+    "qty": 59,
+    "invested": 18496.5
   },
   "LKOH": {
     "qty": 3,
@@ -116,8 +116,8 @@
     "invested": 0
   },
   "SBERP": {
-    "qty": 0,
-    "invested": 0
+    "qty": 4,
+    "invested": 1183.4
   },
   "TATNP": {
     "qty": 0,
