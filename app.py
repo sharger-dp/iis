@@ -6,8 +6,105 @@ from pages.rebalance_calc_page import RebalanceCalculator
 from pages.moex_clien_page import MoexClient
 from pages.portfolio_page import Portfolio
 
-st.set_page_config(page_title="Портфель", layout="wide")
-st.title("📈 Инвестиционный портфель с ребалансировкой")
+# Настройка страницы с современным дизайном
+st.set_page_config(
+    page_title="Инвестиционный Портфель",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Кастомные стили для современного интерфейса
+st.markdown("""
+<style>
+    /* Основной фон и шрифты */
+    .stApp {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    /* Карточки метрик */
+    .metric-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Заголовки */
+    h1, h2, h3, h4, h5 {
+        color: #ffffff !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Метрики */
+    .stMetric {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Таблицы */
+    .dataframe {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Кнопки */
+    .stButton > button {
+        background: linear-gradient(45deg, #FF6B6B, #EE5A6F);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+    }
+    
+    /* Поля ввода */
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input {
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Сайдбар */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #2D3748 0%, #1A202C 100%);
+    }
+    
+    /* Уведомления */
+    .stAlert {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Заголовок с логотипом
+col_logo, col_title = st.columns([1, 6])
+with col_logo:
+    st.markdown("<div style='font-size: 48px;'>📊</div>", unsafe_allow_html=True)
+with col_title:
+    st.markdown("<h1 style='margin-top: 10px;'>Инвестиционный Портфель</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: rgba(255,255,255,0.8); font-size: 18px;'>Профессиональная система управления активами с автоматической ребалансировкой</p>", unsafe_allow_html=True)
+
+st.markdown("---", unsafe_allow_html=True)
 
 json_file_path = "portfolio_data.json"
 
@@ -32,15 +129,23 @@ if "update_flag" not in st.session_state:
 
 portfolio_data = st.session_state.portfolio_data
 
-# ===== Ввод тикеров (пользователь) =====
-tickers_input = st.text_input(
-    "Введите тикеры через запятую (например: SBER, LKOH):",
-    value=",".join(portfolio_data.keys()) if portfolio_data else "SBER, LKOH"
-)
+# ===== Ввод тикеров и депозита в карточках =====
+col_input1, col_input2 = st.columns(2)
+with col_input1:
+    tickers_input = st.text_input(
+        "🎫 Тикеры через запятую",
+        value=",".join(portfolio_data.keys()) if portfolio_data else "SBER, LKOH",
+        help="Введите тикеры бумаг, которые хотите отслеживать"
+    )
 input_tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
-# ===== Ввод депозита =====
-deposit = st.number_input("💰 Внесенная сумма на счет:", min_value=0, step=1000)
+with col_input2:
+    deposit = st.number_input(
+        "💰 Свободные средства (₽)", 
+        min_value=0, 
+        step=1000,
+        help="Укажите доступные средства для инвестиций"
+    )
 
 # ===== Собираем итоговый список тикеров (ввод пользователя + сохранённый портфель) =====
 saved_tickers = list(st.session_state.portfolio_data.keys()) if st.session_state.portfolio_data else []
@@ -87,13 +192,44 @@ else:
 
 # Рассчитаем чистую прибыль
 profit_amount = current_value - total_invested
-color_profit = "green" if profit_percentage >= 0 else "red"
-color_amount = "green" if profit_amount >= 0 else "red"
 
-st.markdown(f"<h3 style='color:{color_profit}'>📈 Доходность портфеля: {profit_percentage:.2f}%</h3>", unsafe_allow_html=True)
-st.subheader(f"💰 Общая сумма вложений: {total_invested:,.2f} ₽")
-st.subheader(f"💵 Общая стоимость портфеля: {portfolio._calculate_portfolio_total():,.2f} ₽")
-st.markdown(f"<h3 style='color:{color_amount}'>➕ Чистая прибыль: {profit_amount:,.2f} ₽</h3>", unsafe_allow_html=True)
+# Отображение ключевых метрик в виде карточек
+st.markdown("### 📊 Ключевые показатели портфеля")
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric(
+        label="💰 Вложено средств",
+        value=f"{total_invested:,.0f} ₽",
+        delta=None
+    )
+
+with col2:
+    st.metric(
+        label="💵 Стоимость портфеля",
+        value=f"{current_value:,.0f} ₽",
+        delta=None
+    )
+
+with col3:
+    delta_color = "normal" if profit_percentage >= 0 else "inverse"
+    st.metric(
+        label="📈 Доходность",
+        value=f"{profit_percentage:.2f}%",
+        delta=f"{profit_percentage:.2f}%" if profit_percentage != 0 else None,
+        delta_color=delta_color
+    )
+
+with col4:
+    delta_color = "normal" if profit_amount >= 0 else "inverse"
+    st.metric(
+        label="➕ Чистая прибыль",
+        value=f"{profit_amount:,.0f} ₽",
+        delta=f"{profit_amount:,.0f} ₽" if profit_amount != 0 else None,
+        delta_color=delta_color
+    )
+
+st.markdown("---", unsafe_allow_html=True)
 
 # ===== Функция для формирования таблицы =====
 def get_portfolio_table(portfolio, deposit, history=None):
@@ -270,10 +406,17 @@ def get_portfolio_table(portfolio, deposit, history=None):
     return df, total_value
 
 # ===== Форма для добавления/докупки бумаги =====
-st.subheader("➕ Добавление/докупка бумаги")
+st.markdown("### ➕ Добавление новой позиции")
 
 # Ввод тикера вне формы (динамическое подтягивание цены)
-new_ticker = st.text_input("🎫 Тикер", value="", help="Пример: SBER, LKOH").strip().upper()
+col_ticker1, col_ticker2 = st.columns([3, 1])
+with col_ticker1:
+    new_ticker = st.text_input(
+        "Тикер бумаги", 
+        value="", 
+        help="Введите тикер, например: SBER, LKOH, YNDX",
+        placeholder="SBER"
+    ).strip().upper()
 
 current_price = None
 if new_ticker:
@@ -285,21 +428,38 @@ if new_ticker:
         st.warning(f"⚠️ Ошибка при получении данных с MOEX: {e}")
 
 if current_price is not None:
-    st.info(f"💰 Текущая цена {new_ticker}: {current_price:,.2f} ₽")
-else:
-    if new_ticker:
-        st.warning("❌ Не удалось получить цену. Проверь тикер.")
+    st.success(f"**💰 Текущая цена {new_ticker}:** {current_price:,.2f} ₽")
+elif new_ticker:
+    st.warning("❌ Не удалось получить цену. Проверьте правильность тикера.")
 
-with st.form(key="add_stock_form"):
-    new_price = st.number_input(
-        "💵 Цена за акцию",
-        min_value=0.01,
-        value=float(current_price) if current_price else 0.01,
-        step=0.01
+st.markdown("---", unsafe_allow_html=True)
+
+with st.form(key="add_stock_form", clear_on_submit=False):
+    col_f1, col_f2, col_f3 = st.columns(3)
+    
+    with col_f1:
+        new_price = st.number_input(
+            "Цена за акцию (₽)",
+            min_value=0.01,
+            value=float(current_price) if current_price else 0.01,
+            step=0.01
+        )
+    
+    with col_f2:
+        new_qty = st.number_input(
+            "Количество акций", 
+            min_value=1, 
+            step=1
+        )
+    
+    with col_f3:
+        # Пустая колонка для выравнивания кнопки
+        st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+    
+    submit_button = st.form_submit_button(
+        "➕ Добавить в портфель", 
+        use_container_width=False
     )
-
-    new_qty = st.number_input("🔢 Количество", min_value=1, step=1)
-    submit_button = st.form_submit_button("💼 Добавить в портфель")
 
 if submit_button:
     if not new_ticker:
@@ -350,22 +510,32 @@ if st.session_state.update_flag:
     st.session_state.update_flag = False
 
 # ===== Вывод таблицы портфеля =====
+st.markdown("### 📋 Детализация портфеля")
 df, total_value = get_portfolio_table(portfolio, deposit)
+
+# Стильное отображение таблицы
 st.data_editor(
     df,
     column_config={
+        "Тикер": st.column_config.TextColumn(width="small"),
+        "Кол-во": st.column_config.NumberColumn(format="%d шт."),
+        "Цена": st.column_config.NumberColumn(format="%.2f ₽"),
+        "Стоимость": st.column_config.NumberColumn(format="%.0f ₽"),
         "Доля, %": st.column_config.NumberColumn(format="%.2f %%"),
         "Кап.доля, %": st.column_config.NumberColumn(format="%.2f %%"),
-        "Цена": st.column_config.NumberColumn(format="%.2f ₽"),
-        "Стоимость": st.column_config.NumberColumn(format="%.2f ₽"),
-        "Сумма покупки": st.column_config.NumberColumn(format="%.2f ₽")
+        "Действие": st.column_config.TextColumn(width="medium"),
+        "Купить шт": st.column_config.NumberColumn(format="%d"),
+        "Сумма покупки": st.column_config.NumberColumn(format="%.0f ₽")
     },
     hide_index=True,
-    disabled=True
+    disabled=True,
+    use_container_width=True
 )
 
-st.subheader(f"💵 Общая стоимость портфеля: {portfolio._calculate_portfolio_total():,.2f} ₽")
-st.subheader(f"💰 Общая сумма с депозитом: {total_value:,.2f} ₽")
+st.markdown("---", unsafe_allow_html=True)
+
+# ===== Сравнение с рыночным индексом =====
+st.markdown("### 📊 Сравнение с рыночным индексом RTS")
 
 # Получаем текущую цену индекса
 moex_client = MoexClient()
@@ -373,23 +543,53 @@ market_index_current = moex_client.get_rts_index_price()
 # Историческая цена индекса (например, за 30 дней назад)
 # Для простоты используем фиктивные данные (в реальности нужно загружать историю)
 market_index_historical = 2171.47  # Пример: цена индекса 30 дней назад
+
 # Рассчитаем доходность индекса
 if market_index_current and market_index_historical > 0:
     market_index_return = ((market_index_current - market_index_historical) / market_index_historical) * 100
 else:
     market_index_return = 0.0
+
 # Рассчитаем доходность портфеля
-portfolio_return = ((current_value - total_invested) / total_invested) * 100
-# Отобразим сравнение с цветовым форматированием
-st.markdown("<h5>📈 Доходность портфеля vs рыночного индекса</h5>", unsafe_allow_html=True)
-# Цвет для портфеля
-color_portfolio = "green" if portfolio_return >= 0 else "red"
-# Цвет для индекса
-color_index = "green" if market_index_return >= 0 else "red"
+portfolio_return = ((current_value - total_invested) / total_invested) * 100 if total_invested > 0 else 0.0
+
+# Отображение в виде карточек
+col_idx1, col_idx2 = st.columns(2)
+
+with col_idx1:
+    delta_color_p = "normal" if portfolio_return >= 0 else "inverse"
+    st.metric(
+        label="📈 Доходность портфеля",
+        value=f"{portfolio_return:.2f}%",
+        delta=f"{portfolio_return:.2f}%" if portfolio_return != 0 else None,
+        delta_color=delta_color_p
+    )
+
+with col_idx2:
+    delta_color_i = "normal" if market_index_return >= 0 else "inverse"
+    st.metric(
+        label="🏛️ Доходность индекса RTS",
+        value=f"{market_index_return:.2f}%",
+        delta=f"{market_index_return:.2f}%" if market_index_return != 0 else None,
+        delta_color=delta_color_i
+    )
+
+# Визуальное сравнение
+if portfolio_return > market_index_return:
+    st.success(f"✅ Ваш портфель превосходит индекс RTS на {(portfolio_return - market_index_return):.2f}%")
+elif portfolio_return < market_index_return:
+    st.warning(f"⚠️ Ваш портфель отстаёт от индекса RTS на {(market_index_return - portfolio_return):.2f}%")
+else:
+    st.info("ℹ️ Доходность портфеля совпадает с доходностью индекса")
+
+# Футер
+st.markdown("---", unsafe_allow_html=True)
 st.markdown(
-    f"<div style='display:flex; justify-content: space-between;'>"
-    f"<span style='color:{color_portfolio}'>портфель: {portfolio_return:.2f}%</span>"
-    f"<span style='color:{color_index}'>индекс: {market_index_return:.2f}%</span>"
-    f"</div>",
+    "<div style='text-align: center; color: rgba(255,255,255,0.6); padding: 20px;'>",
     unsafe_allow_html=True
 )
+st.markdown(
+    "**Инвестиционный Портфель** | Профессиональная система управления активами © 2024",
+    unsafe_allow_html=True
+)
+st.markdown("</div>", unsafe_allow_html=True)
