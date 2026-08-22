@@ -10,7 +10,7 @@ class MoexClient:
     def __init__(self):
         self.base_url = "https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.xml"
         self.index_url = "https://iss.moex.com/iss/engines/stock/markets/index/securities.xml"
-        self.index_history_url = "https://iss.moex.com/iss/engines/stock/markets/index/analytics/securities.xml"
+        self.index_history_url = "https://iss.moex.com/iss/engines/stock/markets/index/securities/IMOEX/candles.xml"
 
     @staticmethod
     def _safe_float(value):
@@ -70,91 +70,73 @@ class MoexClient:
         """
         Получить исторические данные индекса за указанное количество дней.
         Возвращает значение индекса на дату days дней назад.
+        Использует endpoint candles.xml с interval=24 (дневные свечи)
         """
         try:
             from datetime import datetime, timedelta
             
-            # Рассчитываем дату days дней назад
-            target_date = datetime.now() - timedelta(days=days)
-            from_date = (target_date - timedelta(days=10)).strftime("%Y-%m-%d")
-            till_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+            # Рассчитываем даты для запроса
+            till_date = datetime.now()
+            from_date = till_date - timedelta(days=days + 10)
             
-            # Используем другой endpoint для истории индексов
-            url = f"https://iss.moex.com/iss/engines/stock/markets/index/history.xml?securities={index_code}&from={from_date}&till={till_date}&boardid=SNDX"
+            from_date_str = from_date.strftime("%Y-%m-%d")
+            till_date_str = till_date.strftime("%Y-%m-%d")
+            
+            # Формируем URL в правильном формате
+            url = f"{self.index_history_url}?interval=24&from={from_date_str}&till={till_date_str}&limit=1000"
+            
             response = requests.get(url)
             response.raise_for_status()
             root = ET.fromstring(response.content)
             
-            # Ищем данные в marketdata - там должны быть исторические значения
-            marketdata = root.find(".//data[@id='marketdata']")
-            if marketdata is not None:
-                rows_elem = marketdata.find('rows')
-                if rows_elem is not None:
-                    rows = rows_elem.findall('row')
-                    
-                    # Фильтруем строки с нужным индексом и датой
-                    best_match = None
-                    best_date_diff = float('inf')
-                    
-                    for row in rows:
-                        secid = row.get("SECID")
-                        if secid != index_code:
-                            continue
-                        
-                        trade_date_str = row.get("TRADEDATE")
-                        if not trade_date_str:
-                            continue
-                        
-                        try:
-                            trade_date = datetime.strptime(trade_date_str, "%Y-%m-%d")
-                            date_diff = abs((trade_date - target_date).days)
-                            
-                            # Берем ближайшую дату к целевой
-                            if date_diff < best_date_diff:
-                                best_date_diff = date_diff
-                                best_match = row
-                        except ValueError:
-                            continue
-                    
-                    if best_match:
-                        # Пробуем получить VALUE, затем CLOSE, затем LAST
-                        value = best_match.get("VALUE") or best_match.get("CLOSE") or best_match.get("LAST")
-                        if value:
-                            return float(value)
+            # Находим блок с данными свечей
+            candles_data = root.find(".//data[@id='candles']")
+            if candles_data is None:
+                print("⚠️ Не найден блок candles в ответе")
+                return None
+                
+            rows_elem = candles_data.find('rows')
+            if rows_elem is None:
+                print("⚠️ Не найдены строки с данными свечей")
+                return None
+                
+            rows = rows_elem.findall('row')
+            if not rows:
+                print(f"⚠️ Нет данных свечей для {index_code}")
+                return None
             
-            # Если не нашли через marketdata, пробуем получить из history блока
-            history_data = root.find(".//data[@id='history']")
-            if history_data is not None:
-                rows_elem = history_data.find('rows')
-                if rows_elem is not None:
-                    rows = rows_elem.findall('row')
-                    # Проверяем, содержатся ли здесь фактические данные
-                    if rows and 'TRADEDATE' in rows[0].attrib and 'SECID' in rows[0].attrib:
-                        best_match = None
-                        best_date_diff = float('inf')
-                        
-                        for row in rows:
-                            secid = row.get("SECID")
-                            if secid != index_code:
-                                continue
-                            
-                            trade_date_str = row.get("TRADEDATE")
-                            if not trade_date_str:
-                                continue
-                            
-                            try:
-                                trade_date = datetime.strptime(trade_date_str, "%Y-%m-%d")
-                                date_diff = abs((trade_date - target_date).days)
-                                if date_diff < best_date_diff:
-                                    best_date_diff = date_diff
-                                    best_match = row
-                            except ValueError:
-                                continue
-                        
-                        if best_match:
-                            value = best_match.get("VALUE") or best_match.get("CLOSE") or best_match.get("LAST")
-                            if value:
-                                return float(value)
+            # Целевая дата (days дней назад)
+            target_date = datetime.now() - timedelta(days=days)
+            
+            # Ищем ближайшую свечу к целевой дате
+            best_match = None
+            best_date_diff = float('inf')
+            
+            for row in rows:
+                trade_date_str = row.get("begin") or row.get("end")
+                if not trade_date_str:
+                    continue
+                
+                try:
+                    # Парсим дату из формата ISO 8601 (например, 2024-01-15T00:00:00)
+                    if 'T' in trade_date_str:
+                        trade_date = datetime.strptime(trade_date_str.split('T')[0], "%Y-%m-%d")
+                    else:
+                        trade_date = datetime.strptime(trade_date_str, "%Y-%m-%d")
+                    
+                    date_diff = abs((trade_date - target_date).days)
+                    
+                    if date_diff < best_date_diff:
+                        best_date_diff = date_diff
+                        best_match = row
+                except ValueError:
+                    continue
+            
+            if best_match:
+                # Для свечей используем close цену
+                value = best_match.get("close") or best_match.get("CLOSE")
+                if value:
+                    return float(value)
             
             print(f"⚠️ Не найдено значение индекса {index_code} за период ~{days} дней назад")
             return None
