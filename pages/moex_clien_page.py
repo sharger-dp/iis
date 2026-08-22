@@ -84,6 +84,11 @@ class MoexClient:
             for row in market_rows.findall('row'):
                 secid = row.attrib.get('SECID')
                 if secid in data:
-                    data[secid]['LAST'] = self._safe_float(row.attrib.get('LAST'))
+                    # Пробуем получить LAST, если пусто - используем MARKETPRICE
+                    last = self._safe_float(row.attrib.get('LAST'))
+                    if last is None:
+                        last = self._safe_float(row.attrib.get('MARKETPRICE'))
+                    data[secid]['LAST'] = last
+                    
                     cap = row.attrib.get('ISSUECAPITALIZATION')
                     data[secid]['ISSUECAPITALIZATION'] = self._safe_float(cap)

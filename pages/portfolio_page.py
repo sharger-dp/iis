@@ -29,9 +29,13 @@ class Portfolio:
         )
 
     def _calculate_portfolio_total(self):
-        return sum(
-            self.moex_data[ticker]['LAST'] * self.user_inputs[ticker]['qty']
-            for ticker in self.tickers
-            if self.moex_data[ticker]['LAST'] is not None
-            and self.user_inputs[ticker]['qty'] > 0
-        )
+        total = 0
+        for ticker in self.tickers:
+            moex_info = self.moex_data.get(ticker, {})
+            user_info = self.user_inputs.get(ticker, {})
+            last_price = moex_info.get('LAST')
+            qty = user_info.get('qty', 0)
+            
+            if last_price is not None and qty > 0:
+                total += last_price * qty
+        return total
