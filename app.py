@@ -10,7 +10,8 @@ from database import (
     load_portfolio as db_load_portfolio, 
     save_portfolio_position,
     load_history,
-    save_history_entry
+    save_history_entry,
+    add_transaction
 )
 
 # Настройка страницы с современным дизайном
@@ -491,6 +492,16 @@ if submit_button:
             }
 
         save_portfolio(st.session_state.portfolio_data)
+        
+        # Записываем транзакцию в БД
+        add_transaction(
+            ticker=new_ticker,
+            transaction_type="BUY",
+            qty=new_qty,
+            price=new_price,
+            total_amount=total_invested_for_security
+        )
+        
         st.success(f"✅ {new_qty} шт. {new_ticker} добавлено в портфель за {total_invested_for_security:,.2f} ₽")
         st.session_state.update_flag = True
 
