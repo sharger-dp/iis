@@ -1,31 +1,27 @@
-import json
+import database
 
 class UserInputHandler:
-    def __init__(self, json_file_path='portfolio_data.json'):
-        self.json_file_path = json_file_path
+    def __init__(self):
+        pass
 
     def get_inputs(self, tickers):
         try:
-            with open(self.json_file_path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-                inputs = {}
-                for ticker in tickers:
-                    if ticker in data:
-                        inputs[ticker] = {
-                            'qty': data[ticker].get('qty', 0),
-                            'invested': data[ticker].get('invested', 0.0)
-                        }
-                    else:
-                        inputs[ticker] = {
-                            'qty': 0,
-                            'invested': 0.0
-                        }
-                return inputs
-        except FileNotFoundError:
-            print(f"Файл {self.json_file_path} не найден.")
-            return {ticker: {'qty': 0, 'invested': 0.0} for ticker in tickers}
-        except json.JSONDecodeError:
-            print(f"Ошибка при чтении JSON-файла {self.json_file_path}.")
+            portfolio_data = database.load_portfolio()
+            inputs = {}
+            for ticker in tickers:
+                if ticker in portfolio_data:
+                    inputs[ticker] = {
+                        'qty': portfolio_data[ticker].get('qty', 0),
+                        'invested': portfolio_data[ticker].get('invested', 0.0)
+                    }
+                else:
+                    inputs[ticker] = {
+                        'qty': 0,
+                        'invested': 0.0
+                    }
+            return inputs
+        except Exception as e:
+            print(f"Ошибка при загрузке данных из БД: {e}")
             return {ticker: {'qty': 0, 'invested': 0.0} for ticker in tickers}
 
     def _get_integer_input(self, prompt):

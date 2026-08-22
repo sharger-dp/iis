@@ -1,7 +1,6 @@
 from pages.rebalance_app_page import RebalanceApp
 
 if __name__ == "__main__":
-    json_file_path = 'portfolio_data.json'
     tickers = ['BANEP', 'SIBN', 'SMLT', 'MGNT', 'MDMG',
                'NVTK', 'ROSN', 'SBER', 'SVAV', 'TATN',
                'TRNFP', 'HEAD']
@@ -14,5 +13,5 @@ if __name__ == "__main__":
     'MTSS', 'NMTP', 'NLMK', 'NVTK', 'PHOR', 'ROSN', 'RTKM', 'RTKMP',
     'SBER', 'SBERP', 'SIBN', 'SMLT', 'SNGS', 'SNGSP', 'SVAV', 'TATN',
     'TATNP', 'TRNFP', 'BELU', 'PMSB', 'MOEX', 'PLZL', 'X5']
-    app = RebalanceApp(tickers_irdiv, json_file_path)
+    app = RebalanceApp(tickers_irdiv)
     app.run()
