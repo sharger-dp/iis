@@ -413,7 +413,7 @@ def get_portfolio_table(portfolio, deposit, history=None):
     ])
     return df, total_value
 
-# ===== Форма для добавления/докупки бумаги =====
+# ===== Форма для добавления/докупки/продажи бумаги =====
 st.markdown("### ➕ Добавление новой позиции")
 
 # Ввод тикера вне формы (динамическое подтягивание цены)
@@ -442,11 +442,19 @@ elif new_ticker:
 
 st.markdown("---", unsafe_allow_html=True)
 
-with st.form(key="add_stock_form", clear_on_submit=False):
+# Переключатель типа операции
+operation_type = st.radio(
+    "Тип операции",
+    ["Покупка", "Продажа"],
+    horizontal=True,
+    key="operation_type_selector"
+)
+
+with st.form(key="stock_operation_form", clear_on_submit=False):
     col_f1, col_f2, col_f3 = st.columns(3)
     
     with col_f1:
-        new_price = st.number_input(
+        operation_price = st.number_input(
             "Цена за акцию (₽)",
             min_value=0.01,
             value=float(current_price) if current_price else 0.01,
@@ -454,7 +462,7 @@ with st.form(key="add_stock_form", clear_on_submit=False):
         )
     
     with col_f2:
-        new_qty = st.number_input(
+        operation_qty = st.number_input(
             "Количество акций", 
             min_value=1, 
             step=1
@@ -465,44 +473,95 @@ with st.form(key="add_stock_form", clear_on_submit=False):
         st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
     
     submit_button = st.form_submit_button(
-        "➕ Добавить в портфель", 
+        "➕ Купить" if operation_type == "Покупка" else "🔴 Продать", 
         use_container_width=False
     )
 
 if submit_button:
     if not new_ticker:
         st.error("⚠️ Укажите тикер")
-    elif new_qty <= 0:
+    elif operation_qty <= 0:
         st.error("⚠️ Количество должно быть больше 0")
-    elif new_price <= 0:
+    elif operation_price <= 0:
         st.error("⚠️ Цена должна быть больше 0")
     else:
-        total_invested_for_security = new_price * new_qty
+        total_amount = operation_price * operation_qty
+        
+        if operation_type == "Покупка":
+            # Логика покупки
+            if new_ticker in st.session_state.portfolio_data:
+                existing = st.session_state.portfolio_data[new_ticker]
+                st.session_state.portfolio_data[new_ticker] = {
+                    "qty": existing["qty"] + operation_qty,
+                    "invested": existing["invested"] + total_amount
+                }
+            else:
+                st.session_state.portfolio_data[new_ticker] = {
+                    "qty": operation_qty,
+                    "invested": total_amount
+                }
 
-        if new_ticker in st.session_state.portfolio_data:
-            existing = st.session_state.portfolio_data[new_ticker]
-            st.session_state.portfolio_data[new_ticker] = {
-                "qty": existing["qty"] + new_qty,
-                "invested": existing["invested"] + total_invested_for_security
-            }
+            save_portfolio(st.session_state.portfolio_data)
+            
+            # Записываем транзакцию в БД
+            add_transaction(
+                ticker=new_ticker,
+                transaction_type="BUY",
+                qty=operation_qty,
+                price=operation_price,
+                total_amount=total_amount
+            )
+            
+            st.success(f"✅ {operation_qty} шт. {new_ticker} добавлено в портфель за {total_amount:,.2f} ₽")
+        
         else:
-            st.session_state.portfolio_data[new_ticker] = {
-                "qty": new_qty,
-                "invested": total_invested_for_security
-            }
-
-        save_portfolio(st.session_state.portfolio_data)
+            # Логика продажи
+            if new_ticker not in st.session_state.portfolio_data:
+                st.error(f"❌ У вас нет бумаг {new_ticker} в портфеле")
+            else:
+                existing = st.session_state.portfolio_data[new_ticker]
+                available_qty = existing["qty"]
+                
+                if operation_qty > available_qty:
+                    st.error(f"❌ Недостаточно бумаг для продажи. Доступно: {available_qty} шт.")
+                else:
+                    # Рассчитываем среднюю цену покупки для корректного уменьшения invested
+                    avg_buy_price = existing["invested"] / available_qty if available_qty > 0 else 0
+                    invested_to_reduce = avg_buy_price * operation_qty
+                    
+                    # Обновляем позицию
+                    new_qty = available_qty - operation_qty
+                    new_invested = existing["invested"] - invested_to_reduce
+                    
+                    if new_qty == 0:
+                        # Если продали всё — удаляем позицию
+                        del st.session_state.portfolio_data[new_ticker]
+                        # Удаляем из БД
+                        from database import delete_portfolio_position
+                        delete_portfolio_position(new_ticker)
+                        st.success(f"🔴 Все бумаги {new_ticker} проданы. Позиция закрыта.")
+                    else:
+                        st.session_state.portfolio_data[new_ticker] = {
+                            "qty": new_qty,
+                            "invested": max(0, new_invested)  # Защита от отрицательных значений
+                        }
+                        save_portfolio(st.session_state.portfolio_data)
+                    
+                    # Записываем транзакцию продажи в БД
+                    add_transaction(
+                        ticker=new_ticker,
+                        transaction_type="SELL",
+                        qty=operation_qty,
+                        price=operation_price,
+                        total_amount=total_amount
+                    )
+                    
+                    profit_loss = total_amount - invested_to_reduce
+                    if profit_loss >= 0:
+                        st.success(f"🔴 Продано {operation_qty} шт. {new_ticker} за {total_amount:,.2f} ₽. Прибыль: {profit_loss:,.2f} ₽")
+                    else:
+                        st.warning(f"🔴 Продано {operation_qty} шт. {new_ticker} за {total_amount:,.2f} ₽. Убыток: {abs(profit_loss):,.2f} ₽")
         
-        # Записываем транзакцию в БД
-        add_transaction(
-            ticker=new_ticker,
-            transaction_type="BUY",
-            qty=new_qty,
-            price=new_price,
-            total_amount=total_invested_for_security
-        )
-        
-        st.success(f"✅ {new_qty} шт. {new_ticker} добавлено в портфель за {total_invested_for_security:,.2f} ₽")
         st.session_state.update_flag = True
 
 # ===== Если был добавлен новый актив — обновляем moex_data и объект Portfolio =====
@@ -558,15 +617,22 @@ st.markdown("### 📊 Сравнение с рыночным индексом RT
 # Получаем текущую цену индекса
 moex_client = MoexClient()
 market_index_current = moex_client.get_rts_index_price()
-# Историческая цена индекса (например, за 30 дней назад)
-# Для простоты используем фиктивные данные (в реальности нужно загружать историю)
-market_index_historical = 2171.47  # Пример: цена индекса 30 дней назад
+
+# Получаем историческую цену индекса (30 дней назад) автоматически с MOEX
+market_index_historical = moex_client.get_index_history(index_code="IMOEX", days=30)
+
+# Если не удалось получить историю, используем запасное значение
+if market_index_historical is None:
+    market_index_historical = 2171.47  # Запасное значение
+    st.warning("⚠️ Не удалось загрузить историю индекса, используется запасное значение")
 
 # Рассчитаем доходность индекса
 if market_index_current and market_index_historical > 0:
     market_index_return = ((market_index_current - market_index_historical) / market_index_historical) * 100
 else:
     market_index_return = 0.0
+    if not market_index_current:
+        st.warning("⚠️ Не удалось получить текущее значение индекса RTS")
 
 # Рассчитаем доходность портфеля
 portfolio_return = ((current_value - total_invested) / total_invested) * 100 if total_invested > 0 else 0.0
