@@ -12,4 +12,4 @@ setuptools~=56.0.0
 future~=1.0.0
 streamlit>=1.28.0
 pandas>=1.5.0
-plotly>=5.14.0
+plotly>=5.14.0psycopg2-binary>=2.9.0

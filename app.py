@@ -5,6 +5,13 @@ import random
 from pages.rebalance_calc_page import RebalanceCalculator
 from pages.moex_clien_page import MoexClient
 from pages.portfolio_page import Portfolio
+from database import (
+    init_db, 
+    load_portfolio as db_load_portfolio, 
+    save_portfolio_position,
+    load_history,
+    save_history_entry
+)
 
 # Настройка страницы с современным дизайном
 st.set_page_config(
@@ -13,6 +20,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Инициализация базы данных
+init_db()
 
 # Кастомные стили для современного интерфейса
 st.markdown("""
@@ -106,19 +116,19 @@ with col_title:
 
 st.markdown("---", unsafe_allow_html=True)
 
-json_file_path = "portfolio_data.json"
-
-# ===== Функции для работы с JSON =====
+# ===== Функции для работы с БД =====
 def load_portfolio():
-    try:
-        with open(json_file_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+    """Загрузить портфель из БД"""
+    return db_load_portfolio()
 
 def save_portfolio(data):
-    with open(json_file_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    """Сохранить весь портфель в БД"""
+    for ticker, ticker_data in data.items():
+        save_portfolio_position(
+            ticker=ticker,
+            qty=ticker_data.get('qty', 0),
+            invested=ticker_data.get('invested', 0.0)
+        )
 
 # ===== Инициализация состояния =====
 if "portfolio_data" not in st.session_state:
@@ -237,29 +247,20 @@ def get_portfolio_table(portfolio, deposit, history=None):
     total_value = portfolio._calculate_portfolio_total() + deposit
 
     import datetime
-    history_file = "portfolio_history.json"
-
-    def load_history():
-        try:
-            with open(history_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return []
-
-    def save_history(data):
-        with open(history_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
+    
+    # Загружаем историю из БД
     history = load_history()
     today = datetime.date.today().isoformat()
 
+    # Сохраняем запись за сегодня, если её ещё нет
     if not any(entry["date"] == today for entry in history):
-        history.append({
-            "date": today,
-            "portfolio_value": portfolio._calculate_portfolio_total(),
-            "total_with_deposit": total_value
-        })
-        save_history(history)
+        save_history_entry(
+            date=today,
+            portfolio_value=portfolio._calculate_portfolio_total(),
+            total_with_deposit=total_value
+        )
+        # Перезагружаем историю после сохранения
+        history = load_history()
 
     st.subheader("📈 Динамика стоимости портфеля")
 
