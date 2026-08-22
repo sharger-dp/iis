@@ -49,16 +49,22 @@ st.markdown("""
     
     /* Заголовки */
     h1, h2, h3, h4, h5 {
-        color: #ffffff !important;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        color: #1a202c !important;
+        text-shadow: none;
     }
     
     /* Метрики */
     .stMetric {
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
         padding: 15px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .stMetric label {
+        color: #4a5568 !important;
+    }
+    .stMetric div[data-testid="stMetricValue"] {
+        color: #2d3748 !important;
     }
     
     /* Таблицы */
@@ -112,7 +118,7 @@ with col_logo:
     st.markdown("<div style='font-size: 48px;'>📊</div>", unsafe_allow_html=True)
 with col_title:
     st.markdown("<h1 style='margin-top: 10px;'>Инвестиционный Портфель</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: rgba(255,255,255,0.8); font-size: 18px;'>Профессиональная система управления активами с автоматической ребалансировкой</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #4a5568; font-size: 18px;'>Профессиональная система управления активами с автоматической ребалансировкой</p>", unsafe_allow_html=True)
 
 st.markdown("---", unsafe_allow_html=True)
 
@@ -586,7 +592,7 @@ else:
 # Футер
 st.markdown("---", unsafe_allow_html=True)
 st.markdown(
-    "<div style='text-align: center; color: rgba(255,255,255,0.6); padding: 20px;'>",
+    "<div style='text-align: center; color: #4a5568; padding: 20px;'>",
     unsafe_allow_html=True
 )
 st.markdown(
