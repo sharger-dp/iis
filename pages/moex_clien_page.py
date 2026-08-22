@@ -77,13 +77,15 @@ class MoexClient:
             
             # Рассчитываем даты для запроса
             till_date = datetime.now()
-            from_date = till_date - timedelta(days=days + 10)
+            from_date = till_date - timedelta(days=days + 15)
             
             from_date_str = from_date.strftime("%Y-%m-%d")
             till_date_str = till_date.strftime("%Y-%m-%d")
             
             # Формируем URL в правильном формате
             url = f"{self.index_history_url}?interval=24&from={from_date_str}&till={till_date_str}&limit=1000"
+            
+            print(f"🔍 Запрос к MOEX: {url}")
             
             response = requests.get(url)
             response.raise_for_status()
@@ -105,10 +107,13 @@ class MoexClient:
                 print(f"⚠️ Нет данных свечей для {index_code}")
                 return None
             
+            print(f"✅ Получено {len(rows)} записей свечей")
+            
             # Целевая дата (days дней назад)
             target_date = datetime.now() - timedelta(days=days)
+            print(f"🎯 Целевая дата: {target_date.strftime('%Y-%m-%d')}")
             
-            # Ищем ближайшую свечу к целевой дате
+            # Ищем ближайшую свечу к целевой дате (не более чем на 5 дней отличающуюся)
             best_match = None
             best_date_diff = float('inf')
             
@@ -118,31 +123,52 @@ class MoexClient:
                     continue
                 
                 try:
-                    # Парсим дату из формата ISO 8601 (например, 2024-01-15T00:00:00)
+                    # Парсим дату из формата ISO 8601 (например, 2024-01-15T00:00:00 или 2024-01-15 00:00:00)
                     if 'T' in trade_date_str:
                         trade_date = datetime.strptime(trade_date_str.split('T')[0], "%Y-%m-%d")
+                    elif ' ' in trade_date_str:
+                        trade_date = datetime.strptime(trade_date_str.split(' ')[0], "%Y-%m-%d")
                     else:
                         trade_date = datetime.strptime(trade_date_str, "%Y-%m-%d")
                     
                     date_diff = abs((trade_date - target_date).days)
                     
-                    if date_diff < best_date_diff:
+                    # Берем запись не старше 7 дней от целевой даты и ближе всех к ней
+                    if date_diff <= 7 and date_diff < best_date_diff:
                         best_date_diff = date_diff
                         best_match = row
-                except ValueError:
+                        print(f"  📅 Найдена свеча за {trade_date.strftime('%Y-%m-%d')} (разница: {date_diff} дн.)")
+                except ValueError as e:
+                    print(f"  ⚠️ Ошибка парсинга даты {trade_date_str}: {e}")
                     continue
             
-            if best_match:
+            if best_match is not None:
                 # Для свечей используем close цену
                 value = best_match.get("close") or best_match.get("CLOSE")
+                begin_date = best_match.get("begin", "N/A")
                 if value:
+                    print(f"✅ Найдено значение индекса {value} за {begin_date}")
+                    return float(value)
+                else:
+                    print(f"⚠️ У свечи за {begin_date} отсутствует поле close")
+            
+            # Если не нашли близкую дату, берем самую свежую (последнюю) из доступных
+            if rows:
+                latest_row = rows[-1]  # Берем последнюю (самую свежую) запись
+                value = latest_row.get("close") or latest_row.get("CLOSE")
+                begin_date = latest_row.get("begin", "N/A")
+                if value:
+                    print(f"⚠️ Используем ближайшее доступное значение {value} за {begin_date}")
                     return float(value)
             
-            print(f"⚠️ Не найдено значение индекса {index_code} за период ~{days} дней назад")
+            # Если совсем ничего не нашли - возвращаем None
+            logger.warning(f"Не найдено значение индекса {index_code} за период ~{days} дней назад")
             return None
             
         except Exception as e:
             print(f"❌ Ошибка получения истории индекса: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def _parse_xml(self, root, tickers):
