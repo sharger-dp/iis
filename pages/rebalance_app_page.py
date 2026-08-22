@@ -5,11 +5,11 @@ from pages.portfolio_printer_page import PortfolioPrinter
 from pages.user_input_handler import UserInputHandler
 
 class RebalanceApp:
-    def __init__(self, tickers, json_file_path='portfolio_data.json'):
+    def __init__(self, tickers):
         self.tickers = tickers
         self.moex_client = MoexClient()
         self.formatter = Formatter()
-        self.user_input_handler = UserInputHandler(json_file_path)
+        self.user_input_handler = UserInputHandler()
         self.portfolio = None
 
     def run(self):
